@@ -4,7 +4,7 @@ import exceptions.checkers.Checkers;
 
 import java.util.function.BiFunction;
 
-public abstract class AbstractGenericArithmetic<T extends Number> implements GenericArithmetic<T> {
+public abstract class AbstractGenericArithmetic<T> implements GenericArithmetic<T> {
 
     protected T val;
 
@@ -12,16 +12,13 @@ public abstract class AbstractGenericArithmetic<T extends Number> implements Gen
         return val;
     }
 
-    protected AbstractGenericArithmetic(T val) {
+    public AbstractGenericArithmetic(T val) {
         this.val = val;
     }
 
     protected AbstractGenericArithmetic<T> abstractBinaryOp(AbstractGenericArithmetic<T> second,
-                                                            BiFunction<AbstractGenericArithmetic<T>,
-                                                                    AbstractGenericArithmetic<T>,
-                                                                    AbstractGenericArithmetic<T>> calc,
-                                                            BiFunction<AbstractGenericArithmetic<T>,
-                                                                    AbstractGenericArithmetic<T>, Checkers.ExceptionsTypes> checker) {
+            BiFunction<AbstractGenericArithmetic<T>, AbstractGenericArithmetic<T>, AbstractGenericArithmetic<T>> calc,
+            BiFunction<AbstractGenericArithmetic<T>, AbstractGenericArithmetic<T>, Checkers.ExceptionsTypes> checker) {
         if (checker != null) {
             Checkers.ExceptionsTypes resultCheck = checker.apply(this, second);
             if (resultCheck != Checkers.ExceptionsTypes.NONE)

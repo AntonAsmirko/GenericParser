@@ -2,7 +2,7 @@ package expression;
 
 import GenericArithmetic.AbstractGenericArithmetic;
 
-public class Const<T extends Number> implements TripleExpression<T> {
+public class Const<T> implements TripleExpression<T> {
 
     private AbstractGenericArithmetic<T> value;
 
@@ -32,7 +32,6 @@ public class Const<T extends Number> implements TripleExpression<T> {
     public String toString() {
         return String.valueOf(value);
     }
-
 
     private boolean isValOverflow(String val) {
         char[] valInChars = val.toCharArray();
@@ -73,7 +72,8 @@ public class Const<T extends Number> implements TripleExpression<T> {
     }
 
     @Override
-    public AbstractGenericArithmetic<T> evaluate(AbstractGenericArithmetic<T> x, AbstractGenericArithmetic<T> y, AbstractGenericArithmetic<T> z) {
+    public AbstractGenericArithmetic<T> evaluate(AbstractGenericArithmetic<T> x, AbstractGenericArithmetic<T> y,
+            AbstractGenericArithmetic<T> z) {
         return value;
     }
 

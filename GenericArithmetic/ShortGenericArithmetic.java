@@ -7,13 +7,13 @@ import java.util.logging.SocketHandler;
 
 public class ShortGenericArithmetic extends AbstractGenericArithmetic<Short> {
 
-    public ShortGenericArithmetic(Short value) {
-        super(value);
+    public ShortGenericArithmetic(Number value) {
+        super(value.shortValue());
     }
 
     @Override
     public AbstractGenericArithmetic<Short> add(AbstractGenericArithmetic<Short> second) {
-        return abstractBinaryOp( second, add, null);
+        return abstractBinaryOp(second, add, null);
     }
 
     @Override
@@ -38,12 +38,12 @@ public class ShortGenericArithmetic extends AbstractGenericArithmetic<Short> {
 
     @Override
     public AbstractGenericArithmetic<Short> pow2() {
-        return abstractBinaryOp( null, pow2, null);
+        return abstractBinaryOp(null, pow2, null);
     }
 
     @Override
     public AbstractGenericArithmetic<Short> negate() {
-        return abstractBinaryOp( null, negate, null);
+        return abstractBinaryOp(null, negate, null);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class ShortGenericArithmetic extends AbstractGenericArithmetic<Short> {
 
     @Override
     public AbstractGenericArithmetic<Short> count() {
-        return abstractBinaryOp( null, count, null);
+        return abstractBinaryOp(null, count, null);
     }
 
     @Override
@@ -61,53 +61,33 @@ public class ShortGenericArithmetic extends AbstractGenericArithmetic<Short> {
         return abstractBinaryOp(second, min, null);
     }
 
-    private BiFunction<AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>> add = (first, second) ->
-            new ShortGenericArithmetic((short)(first.getValue() + second.getValue()));
+    private BiFunction<AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>> add = (
+            first, second) -> new ShortGenericArithmetic((short) (first.getValue() + second.getValue()));
 
-    private BiFunction<AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>> subtract = (first, second) ->
-            new ShortGenericArithmetic((short)(first.getValue() - second.getValue()));
+    private BiFunction<AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>> subtract = (
+            first, second) -> new ShortGenericArithmetic((short) (first.getValue() - second.getValue()));
 
-    private BiFunction<AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>> multiply = (first, second) ->
-            new ShortGenericArithmetic((short)(first.getValue() * second.getValue()));
+    private BiFunction<AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>> multiply = (
+            first, second) -> new ShortGenericArithmetic((short) (first.getValue() * second.getValue()));
 
-    private BiFunction<AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>> divide = (first, second) ->
-            new ShortGenericArithmetic((short)(first.getValue() / second.getValue()));
+    private BiFunction<AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>> divide = (
+            first, second) -> new ShortGenericArithmetic((short) (first.getValue() / second.getValue()));
 
-    private BiFunction<AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>> log2 = (first, second) ->
-            new ShortGenericArithmetic((short)(Math.log(first.getValue()) / Math.log(2)));
+    private BiFunction<AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>> log2 = (
+            first, second) -> new ShortGenericArithmetic((short) (Math.log(first.getValue()) / Math.log(2)));
 
-    private BiFunction<AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>> pow2 = (first, second) ->
-            new ShortGenericArithmetic((short)(Math.pow(2, first.getValue())));
+    private BiFunction<AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>> pow2 = (
+            first, second) -> new ShortGenericArithmetic((short) (Math.pow(2, first.getValue())));
 
-    private BiFunction<AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>> negate = (first, second) ->
-            new ShortGenericArithmetic((short)(-first.getValue()));
+    private BiFunction<AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>> negate = (
+            first, second) -> new ShortGenericArithmetic((short) (-first.getValue()));
 
-    private BiFunction<AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>> max = (first, second) ->
-            new ShortGenericArithmetic((short)(Math.max(first.getValue(), second.getValue())));
+    private BiFunction<AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>> max = (
+            first, second) -> new ShortGenericArithmetic((short) (Math.max(first.getValue(), second.getValue())));
 
-    private BiFunction<AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>> min = (first, second) ->
-            new ShortGenericArithmetic((short)(Math.min(first.getValue(), second.getValue())));
+    private BiFunction<AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>> min = (
+            first, second) -> new ShortGenericArithmetic((short) (Math.min(first.getValue(), second.getValue())));
 
-    private BiFunction<AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>,
-            AbstractGenericArithmetic<Short>> count = (first, second) ->
-            null;
+    private BiFunction<AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>, AbstractGenericArithmetic<Short>> count = (
+            first, second) -> null;
 }

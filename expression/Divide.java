@@ -2,9 +2,9 @@ package expression;
 
 import GenericArithmetic.AbstractGenericArithmetic;
 
-public class Divide<T extends Number> extends AbstractOperation<T> {
+public class Divide<T> extends AbstractOperation<T> {
 
-    public Divide(TripleExpression firstArg, TripleExpression secondArg) {
+    public Divide(TripleExpression<T> firstArg, TripleExpression<T> secondArg) {
         super(firstArg, secondArg, "/");
     }
 

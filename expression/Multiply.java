@@ -2,7 +2,7 @@ package expression;
 
 import GenericArithmetic.AbstractGenericArithmetic;
 
-public class Multiply<T extends Number> extends AbstractOperation<T> {
+public class Multiply<T> extends AbstractOperation<T> {
 
     public Multiply(TripleExpression<T> firstArg, TripleExpression<T> secondArg) {
         super(firstArg, secondArg, "*");

@@ -4,7 +4,7 @@ import GenericArithmetic.AbstractGenericArithmetic;
 
 import java.util.Objects;
 
-public abstract class AbstractUnaryOperation<T extends Number> implements TripleExpression<T> {
+public abstract class AbstractUnaryOperation<T> implements TripleExpression<T> {
     protected TripleExpression<T> firstArg;
     protected String opType;
 
@@ -17,7 +17,7 @@ public abstract class AbstractUnaryOperation<T extends Number> implements Triple
     public String toString() {
         String res1;
         res1 = firstArg.toString();
-        return opType+"("+res1+")";
+        return opType + "(" + res1 + ")";
     }
 
     @Override
@@ -33,18 +33,17 @@ public abstract class AbstractUnaryOperation<T extends Number> implements Triple
     }
 
     @Override
-    public int hashCode(){
-        return Objects.hash(firstArg,opType);
+    public int hashCode() {
+        return Objects.hash(firstArg, opType);
     }
 
     @Override
-    public AbstractGenericArithmetic<T> evaluate(AbstractGenericArithmetic<T> x,
-                                                 AbstractGenericArithmetic<T> y,
-                                                 AbstractGenericArithmetic<T> z){
+    public AbstractGenericArithmetic<T> evaluate(AbstractGenericArithmetic<T> x, AbstractGenericArithmetic<T> y,
+            AbstractGenericArithmetic<T> z) {
         return eval(firstArg.evaluate(x, y, z));
     }
 
-    public AbstractGenericArithmetic<T> evaluate(AbstractGenericArithmetic<T> x){
+    public AbstractGenericArithmetic<T> evaluate(AbstractGenericArithmetic<T> x) {
         return eval(firstArg.evaluate(x));
     }
 

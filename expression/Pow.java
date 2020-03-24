@@ -2,9 +2,9 @@ package expression;
 
 import GenericArithmetic.AbstractGenericArithmetic;
 
-public class Pow<T extends Number> extends AbstractUnaryOperation<T> {
+public class Pow<T> extends AbstractUnaryOperation<T> {
 
-    public Pow(TripleExpression<T> arg){
+    public Pow(TripleExpression<T> arg) {
         super(arg, "pow2");
     }
 

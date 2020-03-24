@@ -2,16 +2,16 @@ package expression;
 
 import GenericArithmetic.AbstractGenericArithmetic;
 
-public class Variable<T extends Number> implements TripleExpression<T> {
+public class Variable<T> implements TripleExpression<T> {
 
     protected String varName;
 
-    public Variable(String varName){
+    public Variable(String varName) {
         this.varName = varName;
     }
 
     @Override
-    public boolean equals(Object o1){
+    public boolean equals(Object o1) {
         if (o1 == this) {
             return true;
         }
@@ -19,22 +19,23 @@ public class Variable<T extends Number> implements TripleExpression<T> {
             return false;
         }
 
-        Variable exp = (Variable) o1;
+        Variable<T> exp = (Variable) o1;
         return this.varName.equals(exp.varName);
     }
 
     @Override
-    public int hashCode(){
+    public int hashCode() {
         return varName.hashCode();
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return varName;
     }
 
     @Override
-    public AbstractGenericArithmetic<T> evaluate(AbstractGenericArithmetic<T> x, AbstractGenericArithmetic<T> y, AbstractGenericArithmetic<T> z) {
+    public AbstractGenericArithmetic<T> evaluate(AbstractGenericArithmetic<T> x, AbstractGenericArithmetic<T> y,
+            AbstractGenericArithmetic<T> z) {
         switch (varName) {
             case "x":
                 return x;
@@ -47,6 +48,6 @@ public class Variable<T extends Number> implements TripleExpression<T> {
 
     @Override
     public AbstractGenericArithmetic<T> evaluate(AbstractGenericArithmetic<T> x) {
-        return  x;
+        return x;
     }
 }

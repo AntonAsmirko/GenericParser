@@ -2,9 +2,9 @@ package expression;
 
 import GenericArithmetic.AbstractGenericArithmetic;
 
-public class NegativeWrapper<T extends Number> extends AbstractUnaryOperation<T> {
+public class NegativeWrapper<T> extends AbstractUnaryOperation<T> {
 
-    public NegativeWrapper(TripleExpression<T> arg){
+    public NegativeWrapper(TripleExpression<T> arg) {
         super(arg, "-");
     }
 

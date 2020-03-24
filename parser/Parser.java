@@ -5,6 +5,6 @@ import expression.TripleExpression;
 /**
  * @author Georgiy Korneev (kgeorgiy@kgeorgiy.info)
  */
-public interface Parser<T extends Number> {
+public interface Parser<T> {
     TripleExpression<T> parse(String expression);
 }

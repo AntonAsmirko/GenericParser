@@ -4,7 +4,7 @@ import GenericArithmetic.AbstractGenericArithmetic;
 
 import java.util.Objects;
 
-public abstract class AbstractOperation<T extends Number> implements TripleExpression<T> {
+public abstract class AbstractOperation<T> implements TripleExpression<T> {
     protected TripleExpression<T> firstArg;
     protected TripleExpression<T> secondArg;
     protected String opType;
@@ -20,7 +20,7 @@ public abstract class AbstractOperation<T extends Number> implements TripleExpre
         String res1, res2;
         res1 = firstArg.toString();
         res2 = secondArg.toString();
-        return "("+res1+" "+opType+" "+res2+")";
+        return "(" + res1 + " " + opType + " " + res2 + ")";
     }
 
     @Override
@@ -37,21 +37,20 @@ public abstract class AbstractOperation<T extends Number> implements TripleExpre
     }
 
     @Override
-    public int hashCode(){
-        return Objects.hash(firstArg,secondArg,opType);
+    public int hashCode() {
+        return Objects.hash(firstArg, secondArg, opType);
     }
 
     @Override
-    public AbstractGenericArithmetic<T> evaluate(AbstractGenericArithmetic<T> x,
-                                          AbstractGenericArithmetic<T> y,
-                                          AbstractGenericArithmetic<T> z){
+    public AbstractGenericArithmetic<T> evaluate(AbstractGenericArithmetic<T> x, AbstractGenericArithmetic<T> y,
+            AbstractGenericArithmetic<T> z) {
         return eval(firstArg.evaluate(x, y, z), secondArg.evaluate(x, y, z));
     }
 
-    public AbstractGenericArithmetic<T> evaluate(AbstractGenericArithmetic<T> x){
+    public AbstractGenericArithmetic<T> evaluate(AbstractGenericArithmetic<T> x) {
         return eval(firstArg.evaluate(x), secondArg.evaluate(x));
     }
 
     public abstract AbstractGenericArithmetic<T> eval(AbstractGenericArithmetic<T> first,
-                                                      AbstractGenericArithmetic<T> second);
+            AbstractGenericArithmetic<T> second);
 }

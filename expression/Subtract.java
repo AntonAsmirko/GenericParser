@@ -2,7 +2,7 @@ package expression;
 
 import GenericArithmetic.AbstractGenericArithmetic;
 
-public class Subtract<T extends Number> extends AbstractOperation<T> {
+public class Subtract<T> extends AbstractOperation<T> {
 
     public Subtract(TripleExpression<T> firstArg, TripleExpression<T> secondArg) {
         super(firstArg, secondArg, "-");

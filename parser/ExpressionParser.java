@@ -5,67 +5,44 @@ import exceptions.myExceptions.*;
 import expression.*;
 
 import java.math.BigInteger;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
-public class ExpressionParser<T extends Number> implements Parser<T> {
-
-    public static final Function<String, Double> STRING_TO_DOUBLE = Double::valueOf;
-    public static final Function<String, Integer> STRING_TO_INTEGER = Integer::valueOf;
-    public static final Function<String, Long> STRING_TO_LONG = Long::valueOf;
-    public static final Function<String, Short> STRING_TO_SHORT = Short::valueOf;
-    public static final Function<String, BigInteger> STRING_TO_BIG_INTEGER = BigInteger::new;
-    public static final Function<Integer, IntegerGenericArithmetic> INTEGER_TO_GENERIC = IntegerGenericArithmetic::new;
-    public static final Function<Double, DoubleGenericArithmetic> DOUBLE_TO_GENERIC = DoubleGenericArithmetic::new;
-    public static final Function<Short, ShortGenericArithmetic> SHORT_TO_GENERIC = ShortGenericArithmetic::new;
-    public static final Function<Long, LongGenericArithmetic> LONG_TO_GENERIC = LongGenericArithmetic::new;
-    public static final Function<BigInteger,
-            BigIntegerGenericArithmetic> BIG_INTEGER_TO_GENERIC = BigIntegerGenericArithmetic::new;
+public class ExpressionParser<T> implements Parser<T> {
 
     private char[] expression;
-    private Function<String, AbstractGenericArithmetic<T>> typeToInfer;
 
-    private Map<Character, Operators> charToOperatorMap = Map.of(
-            '<', Operators.LEFT_SHIFT,
-            '>', Operators.RIGHT_SHIFT,
-            '+', Operators.ADD,
-            '-', Operators.SUBTRACT,
-            '*', Operators.MULTIPLY,
-            '/', Operators.DIVIDE,
-            'i', Operators.MIN,
-            'a', Operators.MAX
-    );
+    public Function<List<String>, IntegerGenericArithmetic> strToIntGen = x -> x.stream().map(Integer::parseInt)
+            .map(IntegerGenericArithmetic::new).collect(Collectors.toList()).get(0);
+    public Function<List<String>, LongGenericArithmetic> strToLongGen = x -> x.stream().map(Long::parseLong)
+            .map(LongGenericArithmetic::new).collect(Collectors.toList()).get(0);
+    public Function<List<String>, ShortGenericArithmetic> strToShortGen = x -> x.stream().map(Short::parseShort)
+            .map(ShortGenericArithmetic::new).collect(Collectors.toList()).get(0);
+    public Function<List<String>, DoubleGenericArithmetic> strToDoubleGen = x -> x.stream().map(Double::parseDouble)
+            .map(DoubleGenericArithmetic::new).collect(Collectors.toList()).get(0);
+    public Function<List<String>, BigIntegerGenericArithmetic> strToBigIntGen = x -> x.stream().map(BigInteger::new)
+            .map(BigIntegerGenericArithmetic::new).collect(Collectors.toList()).get(0);
 
-    private Map<Character, ParseLevel> charToParseLevel = Map.of(
-            '<', ParseLevel.LEFT_RIGHT,
-            '>', ParseLevel.LEFT_RIGHT,
-            '+', ParseLevel.ADD_SUB,
-            '-', ParseLevel.ADD_SUB,
-            '*', ParseLevel.MULTIPLY_DIVIDE,
-            '/', ParseLevel.MULTIPLY_DIVIDE,
-            'i', ParseLevel.MIN_MAX,
-            'a', ParseLevel.MIN_MAX
-    );
+    private Map<Character, Operators> charToOperatorMap = Map.of('<', Operators.LEFT_SHIFT, '>', Operators.RIGHT_SHIFT,
+            '+', Operators.ADD, '-', Operators.SUBTRACT, '*', Operators.MULTIPLY, '/', Operators.DIVIDE, 'i',
+            Operators.MIN, 'a', Operators.MAX);
 
-    private Map<ParseLevel, ParseLevel> levelDownPath = Map.of(
-            ParseLevel.MIN_MAX, ParseLevel.LEFT_RIGHT,
-            ParseLevel.LEFT_RIGHT, ParseLevel.ADD_SUB,
-            ParseLevel.ADD_SUB, ParseLevel.MULTIPLY_DIVIDE,
-            ParseLevel.MULTIPLY_DIVIDE, ParseLevel.TERMINAL
-    );
+    private Map<Character, ParseLevel> charToParseLevel = Map.of('<', ParseLevel.LEFT_RIGHT, '>', ParseLevel.LEFT_RIGHT,
+            '+', ParseLevel.ADD_SUB, '-', ParseLevel.ADD_SUB, '*', ParseLevel.MULTIPLY_DIVIDE, '/',
+            ParseLevel.MULTIPLY_DIVIDE, 'i', ParseLevel.MIN_MAX, 'a', ParseLevel.MIN_MAX);
 
-    private Map<Operators, BiFunction<TripleExpression<T>, TripleExpression<T>,
-            TripleExpression<T>>> getConstructor = Map.of(
-            Operators.ADD, Add::new,
-            Operators.SUBTRACT, Subtract::new,
-            Operators.MULTIPLY, Multiply::new,
-            Operators.DIVIDE, Divide::new,
-            Operators.MIN, Min::new,
-            Operators.MAX, Max::new
-    );
+    private Map<ParseLevel, ParseLevel> levelDownPath = Map.of(ParseLevel.MIN_MAX, ParseLevel.LEFT_RIGHT,
+            ParseLevel.LEFT_RIGHT, ParseLevel.ADD_SUB, ParseLevel.ADD_SUB, ParseLevel.MULTIPLY_DIVIDE,
+            ParseLevel.MULTIPLY_DIVIDE, ParseLevel.TERMINAL);
+
+    private Map<Operators, BiFunction<TripleExpression<T>, TripleExpression<T>, TripleExpression<T>>> getConstructor = Map
+            .of(Operators.ADD, Add::new, Operators.SUBTRACT, Subtract::new, Operators.MULTIPLY, Multiply::new,
+                    Operators.DIVIDE, Divide::new, Operators.MIN, Min::new, Operators.MAX, Max::new);
 
     private enum Operators {
         ADD, SUBTRACT, DIVIDE, MULTIPLY, LEFT_SHIFT, RIGHT_SHIFT, MIN, MAX
@@ -77,10 +54,6 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
 
     private Set<Character> operatorsCh = Set.of('+', '-', '/', '*', '<', '>', 'i', 'a', 'm');
 
-    public ExpressionParser(Function<String, AbstractGenericArithmetic<T>> typeToInfer) {
-        this.typeToInfer = typeToInfer;
-    }
-
     private TripleExpression<T> parseExpression(ParseLevel level, int leftBorder, int rightBorder) {
         Optional<TripleExpression<T>> prevResult = Optional.empty();
         while (hasNextSameOperator(level, leftBorder, rightBorder)) {
@@ -89,15 +62,13 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
             if (prevResult.isEmpty()) {
                 prevResult = Optional.of(getConstructor.get(myPair.opType).apply(
                         levelDecider(levelDownPath.get(level), leftBorder, myPair.position),
-                        levelDecider(levelDownPath.get(level),
-                                myPair.position + 1,
+                        levelDecider(levelDownPath.get(level), myPair.position + 1,
                                 nextOpPosition(myPair.position + 1, level, rightBorder))));
 
             } else {
-                prevResult = Optional.of(getConstructor.get(myPair.opType).apply(
-                        prevResult.get(),
-                        levelDecider(levelDownPath.get(level), myPair.position + 1,
-                                nextOpPosition(myPair.position + 1, level, rightBorder))));
+                prevResult = Optional.of(
+                        getConstructor.get(myPair.opType).apply(prevResult.get(), levelDecider(levelDownPath.get(level),
+                                myPair.position + 1, nextOpPosition(myPair.position + 1, level, rightBorder))));
             }
             leftBorder = myPair.position + 1;
         }
@@ -124,13 +95,13 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
             Function<Character, Boolean> varChecker = (Character x) -> (x == 'x' || x == 'y' || x == 'z');
             if (Character.isLetter(expression[i]) && !varChecker.apply(expression[i])) {
                 StringBuilder sb = new StringBuilder();
-                for (int j = i; j < expression.length && !Character.isWhitespace(expression[j])
-                        && expression[j] != '-' && expression[j] != '('; j++) {
+                for (int j = i; j < expression.length && !Character.isWhitespace(expression[j]) && expression[j] != '-'
+                        && expression[j] != '('; j++) {
                     sb.append(expression[j]);
                 }
                 String result = sb.toString();
-                if (!result.equals("log2") && !result.equals("pow2")
-                        && !result.equals("min") && !result.equals("max") && !result.equals("count")) {
+                if (!result.equals("log2") && !result.equals("pow2") && !result.equals("min") && !result.equals("max")
+                        && !result.equals("count")) {
                     throw new TypoException("Typo at " + i + " you have written " + result);
                 }
                 if (result.equals("min") || result.equals("max")) {
@@ -147,10 +118,9 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
                 if (operatorsCh.contains(expression[i]) && expression[i] != '-') {
                     throw new WrongArgFlowException("No first argument at position" + i + ": " + getVicinity(i));
                 }
-                if (!Character.isWhitespace(expression[i + 1])
-                        && expression[i + 1] != '-' && expression[i + 1] != '(') {
-                    throw new TypoException("Wrong Basement of log or power at position " + i
-                            + ": " + getVicinity(i));
+                if (!Character.isWhitespace(expression[i + 1]) && expression[i + 1] != '-'
+                        && expression[i + 1] != '(') {
+                    throw new TypoException("Wrong Basement of log or power at position " + i + ": " + getVicinity(i));
                 }
                 continue;
             }
@@ -158,16 +128,12 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
                 throw new WrongOpFlowException("Two operands without operator: " + getVicinity(i));
             }
 
-            if (operatorsCh.contains(expression[i])
-                    && i != expression.length - 1
-                    && !(operatorsCh.contains(expression[i + 1])
-                    && expression[i + 1] != 'i'
-                    && expression[i + 1] != 'a')) {
+            if (operatorsCh.contains(expression[i]) && i != expression.length - 1
+                    && !(operatorsCh.contains(expression[i + 1]) && expression[i + 1] != 'i'
+                            && expression[i + 1] != 'a')) {
                 wasPrevSign = true;
             }
-            if (Character.isDigit(expression[i])
-                    && i != expression.length - 1
-                    && !Character.isDigit(expression[i + 1])
+            if (Character.isDigit(expression[i]) && i != expression.length - 1 && !Character.isDigit(expression[i + 1])
                     && expression[i + 1] != '.') {
                 wasPrevSign = false;
             }
@@ -190,16 +156,12 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
                 }
             }
             if (openCloseBracketsDiff < 0) {
-                throw new WrongBracketSequenceException("Wrong bracket sequence, more close brackets, than open brackets: "
-                        + getVicinity(i));
+                throw new WrongBracketSequenceException(
+                        "Wrong bracket sequence, more close brackets, than open brackets: " + getVicinity(i));
             }
-            if (expression[i] != ')'
-                    && expression[i] != '('
-                    && expression[i] != '.'
-                    && !Character.isLetter(expression[i])
-                    && !Character.isDigit(expression[i])
-                    && !Character.isWhitespace(expression[i])
-                    && !operatorsCh.contains(expression[i])) {
+            if (expression[i] != ')' && expression[i] != '(' && expression[i] != '.'
+                    && !Character.isLetter(expression[i]) && !Character.isDigit(expression[i])
+                    && !Character.isWhitespace(expression[i]) && !operatorsCh.contains(expression[i])) {
                 throw new TypoException("Unresolved symbol \'" + expression[i] + "\' at position " + i);
             }
         }
@@ -208,14 +170,13 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
             for (int u = openCloseBracketsDiffZeroPos; u < expression.length; u++) {
                 sb.append(expression[u]);
             }
-            throw new WrongBracketSequenceException("Wrong bracket sequence, close brackets was missed somewhere: "
-                    + sb.toString());
+            throw new WrongBracketSequenceException(
+                    "Wrong bracket sequence, close brackets was missed somewhere: " + sb.toString());
         }
         char[] newExpression = new char[expression.length - whitespaceCount - trashSymbols];
         int j = 0;
         for (int i = 0; i < expression.length; i++) {
-            if (expression[i] == 'p' || expression[i] == 'l'
-                    || expression[i] == 'm' || expression[i] == 'c') {
+            if (expression[i] == 'p' || expression[i] == 'l' || expression[i] == 'm' || expression[i] == 'c') {
                 if (expression[i] == 'm') {
                     if (expression[i + 1] == 'a') {
                         newExpression[j] = 'a';
@@ -252,13 +213,12 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
     private void someProblemsWithVarOrVal() {
         for (int i = 0; i < expression.length; i++) {
             if (i != expression.length - 1
-                    && (operatorsCh.contains(expression[i])
-                    || !Character.isLetter(expression[i]) && !Character.isDigit(expression[i])
-                    && expression[i] != ')') && expression[i + 1] == ')'
+                    && (operatorsCh.contains(expression[i]) || !Character.isLetter(expression[i])
+                            && !Character.isDigit(expression[i]) && expression[i] != ')')
+                    && expression[i + 1] == ')'
                     || i == expression.length - 1
-                    && (operatorsCh.contains(expression[i])
-                    || !Character.isLetter(expression[i])
-                    && !Character.isDigit(expression[i]) && expression[i] != ')')) {
+                            && (operatorsCh.contains(expression[i]) || !Character.isLetter(expression[i])
+                                    && !Character.isDigit(expression[i]) && expression[i] != ')')) {
                 throw new WrongOpFlowException("Missed Operand at position " + i + ": " + getVicinity(i));
             }
         }
@@ -280,16 +240,17 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
         return new Const<>(typeToInfer.apply(stringCutter(sb.toString())));
     }
 
-    private String stringCutter(String str){
-        if (str.charAt(0) == '-'){
+    private String stringCutter(String str) {
+        if (str.charAt(0) == '-') {
             return str.substring(1);
-        } else return str;
+        } else
+            return str;
     }
 
     private TripleExpression<T> parseVar(int leftBorder) {
         if (expression[leftBorder] != 'x' && expression[leftBorder] != 'y' && expression[leftBorder] != 'z') {
-            throw new TypoException("Unacceptable variable \'"
-                    + expression[leftBorder] + "\' at position " + leftBorder);
+            throw new TypoException(
+                    "Unacceptable variable \'" + expression[leftBorder] + "\' at position " + leftBorder);
         }
         return new Variable<>(String.valueOf(expression[leftBorder]));
     }
@@ -311,13 +272,12 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
             }
             if (operatorsCh.contains(expression[leftBorder])) {
                 if (charToParseLevel.get(expression[leftBorder]) == level) {
-                    if (expression[leftBorder] == '-'
-                            && (leftBorder == 0 || operatorsCh.contains(expression[leftBorder - 1])
-                            || expression[leftBorder - 1] == '(')) {
+                    if (expression[leftBorder] == '-' && (leftBorder == 0
+                            || operatorsCh.contains(expression[leftBorder - 1]) || expression[leftBorder - 1] == '(')) {
                         continue;
                     }
-                    return new MyPair(leftBorder, charToOperatorMap.get(expression[leftBorder] == 'm' ?
-                            expression[leftBorder + 1] : expression[leftBorder]));
+                    return new MyPair(leftBorder, charToOperatorMap
+                            .get(expression[leftBorder] == 'm' ? expression[leftBorder + 1] : expression[leftBorder]));
                 }
             }
         }
@@ -349,8 +309,7 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
 
     private boolean hasNextSameOperator(ParseLevel level, int leftBorder, int rightBorder) {
         for (; leftBorder < rightBorder; leftBorder++) {
-            if (expression[leftBorder] == 'l' || expression[leftBorder] == 'p'
-                    || expression[leftBorder] == 'c') {
+            if (expression[leftBorder] == 'l' || expression[leftBorder] == 'p' || expression[leftBorder] == 'c') {
                 leftBorder = skipLogPow(leftBorder);
                 if (leftBorder == rightBorder) {
                     return false;
@@ -359,17 +318,14 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
             if (expression[leftBorder] == '(') {
                 leftBorder = findCloseBracketPosition(leftBorder);
             }
-            if (level == ParseLevel.MULTIPLY_DIVIDE && (expression[leftBorder] == '*'
-                    || expression[leftBorder] == '/') ||
-                    level == ParseLevel.MIN_MAX && expression[leftBorder] == 'i' ||
-                    level == ParseLevel.MIN_MAX && expression[leftBorder] == 'a' ||
-                    level == ParseLevel.ADD_SUB && (expression[leftBorder] == '+'
-                            || expression[leftBorder] == '-') ||
-                    level == ParseLevel.LEFT_RIGHT && (expression[leftBorder] == '<'
-                            || expression[leftBorder] == '>')) {
-                if (expression[leftBorder] == '-'
-                        && (leftBorder == 0 || operatorsCh.contains(expression[leftBorder - 1])
-                        || expression[leftBorder - 1] == '(')) {
+            if (level == ParseLevel.MULTIPLY_DIVIDE && (expression[leftBorder] == '*' || expression[leftBorder] == '/')
+                    || level == ParseLevel.MIN_MAX && expression[leftBorder] == 'i'
+                    || level == ParseLevel.MIN_MAX && expression[leftBorder] == 'a'
+                    || level == ParseLevel.ADD_SUB && (expression[leftBorder] == '+' || expression[leftBorder] == '-')
+                    || level == ParseLevel.LEFT_RIGHT
+                            && (expression[leftBorder] == '<' || expression[leftBorder] == '>')) {
+                if (expression[leftBorder] == '-' && (leftBorder == 0
+                        || operatorsCh.contains(expression[leftBorder - 1]) || expression[leftBorder - 1] == '(')) {
                     continue;
                 }
                 return true;
@@ -393,9 +349,8 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
                     return rightBorder;
                 }
             }
-            if (operatorsCh.contains(expression[i]) && charToParseLevel.get(expression[i]) == level &&
-                    !((expression[i] == '-'
-                            && (i == 0 || operatorsCh.contains(expression[i - 1]))))) {
+            if (operatorsCh.contains(expression[i]) && charToParseLevel.get(expression[i]) == level
+                    && !((expression[i] == '-' && (i == 0 || operatorsCh.contains(expression[i - 1]))))) {
                 return i;
             }
         }
@@ -404,8 +359,8 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
 
     private void checkWrongOperatorFlow(int from, int since, int to) {
         for (int i = since + 1; i < to; i++) {
-            if (Character.isDigit(expression[i]) || Character.isLetter(expression[i])
-                    || expression[i] == '(' || expression[i] == '-') {
+            if (Character.isDigit(expression[i]) || Character.isLetter(expression[i]) || expression[i] == '('
+                    || expression[i] == '-') {
                 break;
             }
             if (operatorsCh.contains(expression[i]) || expression[i] == '%') {
@@ -413,8 +368,8 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
             }
         }
         for (int i = since - 1; i >= from; i--) {
-            if (Character.isDigit(expression[i]) || Character.isLetter(expression[i])
-                    || expression[i] == ')' || expression[i] == '-') {
+            if (Character.isDigit(expression[i]) || Character.isLetter(expression[i]) || expression[i] == ')'
+                    || expression[i] == '-') {
                 break;
             }
             if (operatorsCh.contains(expression[i]) || expression[i] == '%') {
@@ -439,32 +394,27 @@ public class ExpressionParser<T extends Number> implements Parser<T> {
     }
 
     private TripleExpression<T> unwrapNegationIfExistsAndParse(int leftBorder, int rightBorder,
-                                                               boolean hasNegotiation) {
+            boolean hasNegotiation) {
         if (expression[leftBorder] == '-') {
-            return new NegativeWrapper<>(unwrapNegationIfExistsAndParse(leftBorder + 1,
-                    rightBorder, true));
+            return new NegativeWrapper<>(unwrapNegationIfExistsAndParse(leftBorder + 1, rightBorder, true));
         } else if (expression[leftBorder] == 'l') {
-            return new Log<>(unwrapNegationIfExistsAndParse(leftBorder + 1, rightBorder,
-                    false));
+            return new Log<>(unwrapNegationIfExistsAndParse(leftBorder + 1, rightBorder, false));
         } else if (expression[leftBorder] == 'p') {
-            return new Pow<>(unwrapNegationIfExistsAndParse(leftBorder + 1, rightBorder,
-                    false));
+            return new Pow<>(unwrapNegationIfExistsAndParse(leftBorder + 1, rightBorder, false));
         } else if (expression[leftBorder] == 'c') {
-            return new Count<>(unwrapNegationIfExistsAndParse(leftBorder + 1, rightBorder,
-                    false));
+            return new Count<>(unwrapNegationIfExistsAndParse(leftBorder + 1, rightBorder, false));
         } else {
             if (hasNextParticularSymbol(leftBorder, Character::isDigit)) {
                 return parseVal(leftBorder, rightBorder, hasNegotiation);
             } else if (hasNextParticularSymbol(leftBorder, Character::isLetter)) {
                 if (hasNextParticularSymbol(leftBorder, (Character x) -> !(x == 'x' || x == 'y' || x == 'z'))) {
-                    throw new TypoException("Unacceptable variable name \'" + expression[leftBorder]
-                            + "\' at position " + leftBorder);
+                    throw new TypoException(
+                            "Unacceptable variable name \'" + expression[leftBorder] + "\' at position " + leftBorder);
                 }
                 return parseVar(leftBorder);
             } else if (hasNextParticularSymbol(leftBorder, (Character a) -> a.equals('('))) {
                 int closeBracket = findCloseBracketPosition(leftBorder);
-                return parseExpression(ParseLevel.LEFT_RIGHT, leftBorder + 1,
-                        closeBracket - 1);
+                return parseExpression(ParseLevel.LEFT_RIGHT, leftBorder + 1, closeBracket - 1);
             }
         }
         throw new WrongOpFlowException("Wrong Operand flow at vicinity: " + getVicinity(leftBorder));

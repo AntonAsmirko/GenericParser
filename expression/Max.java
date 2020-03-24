@@ -2,7 +2,7 @@ package expression;
 
 import GenericArithmetic.AbstractGenericArithmetic;
 
-public class Max<T extends Number> extends AbstractOperation<T> {
+public class Max<T> extends AbstractOperation<T> {
 
     public Max(TripleExpression<T> firstArg, TripleExpression<T> secondArg) {
         super(firstArg, secondArg, "max");
