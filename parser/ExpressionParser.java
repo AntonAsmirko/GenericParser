@@ -16,17 +16,7 @@ import java.util.stream.Collectors;
 public class ExpressionParser<T> implements Parser<T> {
 
     private char[] expression;
-
-    public Function<List<String>, IntegerGenericArithmetic> strToIntGen = x -> x.stream().map(Integer::parseInt)
-            .map(IntegerGenericArithmetic::new).collect(Collectors.toList()).get(0);
-    public Function<List<String>, LongGenericArithmetic> strToLongGen = x -> x.stream().map(Long::parseLong)
-            .map(LongGenericArithmetic::new).collect(Collectors.toList()).get(0);
-    public Function<List<String>, ShortGenericArithmetic> strToShortGen = x -> x.stream().map(Short::parseShort)
-            .map(ShortGenericArithmetic::new).collect(Collectors.toList()).get(0);
-    public Function<List<String>, DoubleGenericArithmetic> strToDoubleGen = x -> x.stream().map(Double::parseDouble)
-            .map(DoubleGenericArithmetic::new).collect(Collectors.toList()).get(0);
-    public Function<List<String>, BigIntegerGenericArithmetic> strToBigIntGen = x -> x.stream().map(BigInteger::new)
-            .map(BigIntegerGenericArithmetic::new).collect(Collectors.toList()).get(0);
+    private Function<String, AbstractGenericArithmetic<T>> functionToInfer;
 
     private Map<Character, Operators> charToOperatorMap = Map.of('<', Operators.LEFT_SHIFT, '>', Operators.RIGHT_SHIFT,
             '+', Operators.ADD, '-', Operators.SUBTRACT, '*', Operators.MULTIPLY, '/', Operators.DIVIDE, 'i',
@@ -53,6 +43,12 @@ public class ExpressionParser<T> implements Parser<T> {
     }
 
     private Set<Character> operatorsCh = Set.of('+', '-', '/', '*', '<', '>', 'i', 'a', 'm');
+
+    public ExpressionParser(Function<Number, AbstractGenericArithmetic<T>> constructorFnc,
+            Function<String, Number> mediatorConverter) {
+        this.functionToInfer = mediatorConverter.andThen(constructorFnc);
+
+    }
 
     private TripleExpression<T> parseExpression(ParseLevel level, int leftBorder, int rightBorder) {
         Optional<TripleExpression<T>> prevResult = Optional.empty();
@@ -237,7 +233,7 @@ public class ExpressionParser<T> implements Parser<T> {
         if (rightBorder < expression.length && Character.isDigit(expression[rightBorder])) {
             sb.append(expression[rightBorder]);
         }
-        return new Const<>(typeToInfer.apply(stringCutter(sb.toString())));
+        return new Const<>(functionToInfer.apply(stringCutter(sb.toString())));
     }
 
     private String stringCutter(String str) {

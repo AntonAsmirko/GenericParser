@@ -3,10 +3,9 @@ package tabulator;
 import GenericArithmetic.*;
 import exceptions.myExceptions.GenericParserException;
 import parser.ExpressionParser;
+
 import java.math.BigInteger;
-import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class GenericTabulator implements Tabulator {
 
@@ -17,15 +16,15 @@ public class GenericTabulator implements Tabulator {
     private static final String L = "l";
     private static int realAxeX, realAxeY, realAxeZ;
 
-    public <T extends Number> Object[][][] tabulate(String expression, Object[][][] result, Integer x1, Integer y1,
-            Integer z1, Function<Integer, AbstractGenericArithmetic<T>> constructor) {
-        for (Integer i = 0; i < realAxeX; i++) {
-            for (Integer j = 0; j < realAxeY; j++) {
-                for (Integer k = 0; k < realAxeZ; k++) {
+    public <T extends Number> Object[][][] tabulate(String expression, Object[][][] result, int x1, int y1, int z1,
+            Function<Number, AbstractGenericArithmetic<T>> constructorFnc, Function<String, Number> mediator) {
+        for (int i = 0; i < realAxeX; i++) {
+            for (int j = 0; j < realAxeY; j++) {
+                for (int k = 0; k < realAxeZ; k++) {
                     try {
-                        result[i][j][k] = new ExpressionParser<T>().parse(expression)
-                                .evaluate(constructor.apply((x1 + i)), constructor.apply(y1 + j),
-                                        constructor.apply(z1 + k))
+                        result[i][j][k] = new ExpressionParser<T>(constructorFnc, mediator).parse(expression)
+                                .evaluate(constructorFnc.apply(x1 + i), constructorFnc.apply(y1 + j),
+                                        constructorFnc.apply(z1 + k))
                                 .getValue();
                     } catch (Exception e) {
                         result[i][j][k] = null;
@@ -47,22 +46,23 @@ public class GenericTabulator implements Tabulator {
         Object[][][] result = new Object[realAxeX][realAxeY][realAxeZ];
         switch (mode) {
             case I:
-                return tabulate(expression, result, x1, y1, z1, IntegerGenericArithmetic::new);
+                return tabulate(expression, result, x1, y1, z1, IntegerGenericArithmetic::new, Integer::parseInt);
             case D:
-                return tabulate(expression, result, x1, y1, z1, DoubleGenericArithmetic::new);
+                return tabulate(expression, result, x1, y1, z1, DoubleGenericArithmetic::new, Double::parseDouble);
             case BI:
-                return tabulate(expression, result, x1, y1, z1, BigIntegerGenericArithmetic::new);
+                return tabulate(expression, result, x1, y1, z1, BigIntegerGenericArithmetic::new, BigInteger::new);
             case S:
-                return tabulate(expression, result, x1, y1, z1, ShortGenericArithmetic::new);
+                return tabulate(expression, result, x1, y1, z1, ShortGenericArithmetic::new, Short::parseShort);
             case L:
-                return tabulate(expression, result, x1, y1, z1, IntegerGenericArithmetic::new);
+                return tabulate(expression, result, x1, y1, z1, LongGenericArithmetic::new, Long::parseLong);
             default:
                 throw new GenericParserException("Strange mode: " + mode);
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws GenericParserException {
         GenericTabulator tabulator = new GenericTabulator();
-        System.out.println(tabulator.tabulate("i", "4 min 2 min 3", -5, 18, -15, 14, -2, 7)[0][0][0]);
+        System.out.println(tabulator.tabulate("s", "10", 2147483632, 2147483646, 2147483642, 2147483646, 2147483637,
+                2147483646)[0][0][0]);
     }
 }

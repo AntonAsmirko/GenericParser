@@ -10,6 +10,10 @@ public class DoubleGenericArithmetic extends AbstractGenericArithmetic<Double> {
         super(val.doubleValue());
     }
 
+    public DoubleGenericArithmetic(String val) {
+        super(Double.valueOf(val));
+    }
+
     @Override
     public AbstractGenericArithmetic<Double> add(AbstractGenericArithmetic<Double> second) {
         return abstractBinaryOp(second, add, null);
